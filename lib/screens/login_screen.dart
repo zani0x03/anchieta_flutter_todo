@@ -15,14 +15,22 @@ class LoginScreen extends StatelessWidget {
           children: [
             const SizedBox(height: 80),
             Container(
-              height: 120, width: 120,
-              decoration: BoxDecoration(color: Colors.blueGrey[900], borderRadius: BorderRadius.circular(20)),
+              height: 120,
+              width: 120,
+              decoration: BoxDecoration(
+                color: Colors.blueGrey[900],
+                borderRadius: BorderRadius.circular(20),
+              ),
               child: const Icon(Icons.bolt, size: 60, color: Colors.cyan),
             ),
             const SizedBox(height: 50),
             const CustomInput(label: "Login", hint: "Digite seu usuário"),
             const SizedBox(height: 20),
-            const CustomInput(label: "Password", hint: "Digite sua senha", isObscure: true),
+            const CustomInput(
+              label: "Password",
+              hint: "Digite sua senha",
+              isObscure: true,
+            ),
             const SizedBox(height: 30),
             CustomButton(
               text: "Logar",
@@ -30,7 +38,10 @@ class LoginScreen extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {},
-              child: const Text("esqueci minha senha", style: TextStyle(color: Colors.orange)),
+              child: const Text(
+                "esqueci minha senha",
+                style: TextStyle(color: Colors.orange),
+              ),
             ),
           ],
         ),
