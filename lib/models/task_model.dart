@@ -3,7 +3,8 @@ import 'package:uuid/uuid.dart';
 class TaskModel {
   String id;
   String tarefa;
-  int status; // 0: Ativa, 1: Removida, 2: Sincronizada
+  int status; // 0: Ativa, 1: finalizada, 2: excluída
+
   String? idUserCreated;
   String dtCreated;
   String? idUserLastUpdated;

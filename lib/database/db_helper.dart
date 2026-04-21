@@ -17,7 +17,12 @@ class DbHelper {
 
   Future<Database> _initDb() async {
     String path = join(await getDatabasesPath(), 'todo.db');
-    return await openDatabase(path, version: 1, onCreate: _onCreate);
+    return await openDatabase(
+      path, 
+      version: 2, 
+      onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
+    );
   }
 
   Future _onCreate(Database db, int version) async {
@@ -32,6 +37,16 @@ class DbHelper {
         dtLastUpdated TEXT
       )
     ''');
+  }
+
+  Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    switch(newVersion){
+      case 2: 
+        await db.execute('ALTER TABLE tasks ADD COLUMN sync INTEGER DEFAULT 0');
+        break;
+      default:
+        print("Nehhuma opção selecionada");
+    }
   }
 
   Future<int> insertTask(TaskModel task) async {
@@ -63,8 +78,8 @@ class DbHelper {
     );
   }
 
-  Future<int> deleteTask(String id) async {
-    Database db = await database;
-    return await db.delete('tasks', where: 'id = ?', whereArgs: [id]);
-  }
+  // Future<int> deleteTask(String id) async {
+  //   Database db = await database;
+  //   return await db.delete('tasks', where: 'id = ?', whereArgs: [id]);
+  // }
 }

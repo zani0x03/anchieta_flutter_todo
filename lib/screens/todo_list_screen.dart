@@ -157,8 +157,8 @@ class _TodoListScreenState extends State<TodoListScreen> {
                   child: const Icon(Icons.delete_outline, color: Colors.white),
                 ),
                 onDismissed: (direction) async {
-                  await _db.deleteTask(item.id);
-                  // Sem setState aqui para não "quebrar" a animação nativa do Dismissible
+                  // await _db.deleteTask(item.id);
+                  await _db.updateTaskStatus(item.id, 2);
                 },
                 child: TodoTile(
                   label: item.tarefa,
