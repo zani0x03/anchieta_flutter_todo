@@ -13,7 +13,7 @@ class TodoApp extends StatelessWidget {
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: const Color(0xFF121212),
       ),
-      home: const LoginScreen(),
+      home: LoginScreen(),
     );
   }
 }

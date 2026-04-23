@@ -6,11 +6,14 @@ class CustomInput extends StatelessWidget {
   final bool isObscure;
   final Widget? suffixIcon;
 
+  final TextEditingController? controller; //
+
   const CustomInput({
     super.key, 
     this.label, 
     required this.hint, 
     this.isObscure = false,
+    this.controller,
     this.suffixIcon,
   });
 
@@ -24,6 +27,7 @@ class CustomInput extends StatelessWidget {
           const SizedBox(height: 8),
         ],
         TextField(
+          controller: controller,
           obscureText: isObscure,
           decoration: InputDecoration(
             hintText: hint,

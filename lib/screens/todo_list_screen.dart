@@ -1,3 +1,4 @@
+import 'package:anchieta_flutter_todo/screens/login_screen.dart';
 import 'package:anchieta_flutter_todo/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'chat_screen.dart';
@@ -15,6 +16,35 @@ class TodoListScreen extends StatefulWidget {
 class _TodoListScreenState extends State<TodoListScreen> {
   final DbHelper _db = DbHelper();
   final TextEditingController _taskController = TextEditingController();
+
+  void _handleLogout(BuildContext context) {
+    // Aqui futuramente você limparia os tokens salvos (SharedPreferences)
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Sair"),
+        content: const Text("Deseja realmente encerrar a sessão?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancelar"),
+          ),
+          TextButton(
+            onPressed: () {
+              // Remove todas as telas e volta para o Login
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (route) => false,
+              );
+            },
+            child: const Text("Sair", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
 
   void _showAddTaskModal() {
     showModalBottomSheet(
@@ -101,18 +131,27 @@ class _TodoListScreenState extends State<TodoListScreen> {
         actions: [
           PopupMenuButton<String>(
             icon: const Icon(Icons.menu),
-            onSelected: (val) => val == 'chat'
-                ? Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ChatScreen()),
-                  )
-                : null,
+            onSelected: (val) {
+              if (val == 'chat') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ChatScreen()),
+                );
+              } else if (val == 'logout') {
+                _handleLogout(context); // Chama a função de logout
+              }
+            },
             itemBuilder: (ctx) => [
               const PopupMenuItem(
                 value: 'sync',
                 child: Text("Forçar Sincronismo"),
               ),
               const PopupMenuItem(value: 'chat', child: Text("Suporte (Chat)")),
+              const PopupMenuDivider(), // Linha divisória para estética
+              const PopupMenuItem(
+                value: 'logout',
+                child: Text("Sair", style: TextStyle(color: Colors.redAccent)),
+              ),
             ],
           ),
         ],
