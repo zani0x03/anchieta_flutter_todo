@@ -15,8 +15,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _loginController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  final IAuthService authService = AuthServiceMock();
-  // final IAuthService authService = AuthService();
+  // final IAuthService authService = AuthServiceMock();
+  final IAuthService authService = AuthService();
 
   // 3. A sua função handleLogin atualizada
   void _handleLogin() async {
@@ -27,7 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     try {
-      final result = await authService.login(
+      final authData = await authService.login(
         _loginController.text, 
         _passwordController.text
       );
@@ -35,12 +35,11 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       Navigator.pop(context);
       
-      print("Token recebido: ${result['access_token']}");
       
       // Navegação para a próxima tela
       Navigator.pushReplacement(
         context, 
-        MaterialPageRoute(builder: (_) => const TodoListScreen())
+        MaterialPageRoute(builder: (_) => TodoListScreen(user: authData))
       );
     } catch (e) {
       // Remove o dialog de carregando em caso de erro

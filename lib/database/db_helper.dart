@@ -1,3 +1,4 @@
+import 'package:anchieta_flutter_todo/dtos/task_update_dto.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/task_model.dart';
@@ -54,27 +55,24 @@ class DbHelper {
     return await db.insert('tasks', task.toMap());
   }
 
-  Future<List<TaskModel>> getTasksAtivas() async {
+  Future<List<TaskModel>> getTasksAtivas(String idUserCreated) async {
     Database db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
       'tasks', 
-      where: 'status = ?', 
-      whereArgs: [0],
+      where: 'status = ? and idUserCreated = ?', 
+      whereArgs: [0, idUserCreated],
       orderBy: 'dtCreated DESC'
     );
     return List.generate(maps.length, (i) => TaskModel.fromMap(maps[i]));
   }
 
-  Future<int> updateTaskStatus(String id, int newStatus) async {
+  Future<int> updateTask(TaskUpdateDTO dto) async {
     Database db = await database;
     return await db.update(
       'tasks',
-      {
-        'status': newStatus,
-        'dtLastUpdated': DateTime.now().toIso8601String()
-      },
+      dto.toMap(), // O DTO já entrega o mapa prontinho
       where: 'id = ?',
-      whereArgs: [id],
+      whereArgs: [dto.id],
     );
   }
 

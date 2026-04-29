@@ -1,3 +1,5 @@
+import 'package:anchieta_flutter_todo/dtos/task_update_dto.dart';
+import 'package:anchieta_flutter_todo/dtos/auth_response_dto.dart';
 import 'package:anchieta_flutter_todo/screens/login_screen.dart';
 import 'package:anchieta_flutter_todo/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +9,9 @@ import '../models/task_model.dart';
 import '../widgets/todo_tile.dart';
 
 class TodoListScreen extends StatefulWidget {
-  const TodoListScreen({super.key});
+  final AuthResponseDto user;
+  
+  const TodoListScreen({super.key, required this.user});
 
   @override
   State<TodoListScreen> createState() => _TodoListScreenState();
@@ -18,8 +22,6 @@ class _TodoListScreenState extends State<TodoListScreen> {
   final TextEditingController _taskController = TextEditingController();
 
   void _handleLogout(BuildContext context) {
-    // Aqui futuramente você limparia os tokens salvos (SharedPreferences)
-
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -32,7 +34,6 @@ class _TodoListScreenState extends State<TodoListScreen> {
           ),
           TextButton(
             onPressed: () {
-              // Remove todas as telas e volta para o Login
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -55,15 +56,18 @@ class _TodoListScreenState extends State<TodoListScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        // Criamos uma função interna para salvar, assim evitamos repetir código
         void handleSave() async {
           if (_taskController.text.trim().isNotEmpty) {
+            // Agora salvamos passando o ID do usuário que extraímos do JWT
             await _db.insertTask(
-              TaskModel(tarefa: _taskController.text.trim()),
+              TaskModel(
+                tarefa: _taskController.text.trim(),
+                idUserCreated: widget.user.userId, 
+              ),
             );
             _taskController.clear();
             if (context.mounted) Navigator.pop(context);
-            setState(() {}); // Atualiza a lista na tela principal
+            setState(() {}); 
           }
         }
 
@@ -88,12 +92,10 @@ class _TodoListScreenState extends State<TodoListScreen> {
               const SizedBox(height: 15),
               TextField(
                 controller: _taskController,
-                autofocus: true, // Foca automaticamente ao abrir
+                autofocus: true,
                 style: const TextStyle(color: Colors.white),
-                textInputAction: TextInputAction
-                    .done, // Muda o ícone do teclado para "Check/Done"
-                onSubmitted: (_) =>
-                    handleSave(), // Aciona o salvar ao apertar Enter
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => handleSave(),
                 decoration: InputDecoration(
                   hintText: "O que precisa ser feito?",
                   hintStyle: const TextStyle(color: Colors.white24),
@@ -106,7 +108,6 @@ class _TodoListScreenState extends State<TodoListScreen> {
               ),
               const SizedBox(height: 15),
               CustomButton(
-                // Usando o seu widget customizado de botão
                 text: "Salvar Tarefa",
                 onPressed: handleSave,
               ),
@@ -123,6 +124,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        elevation: 0,
         title: const Text(
           "TODOS",
           style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
@@ -135,19 +137,16 @@ class _TodoListScreenState extends State<TodoListScreen> {
               if (val == 'chat') {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const ChatScreen()),
+                  MaterialPageRoute(builder: (_) => ChatScreen(user: widget.user)),
                 );
               } else if (val == 'logout') {
-                _handleLogout(context); // Chama a função de logout
+                _handleLogout(context);
               }
             },
             itemBuilder: (ctx) => [
-              const PopupMenuItem(
-                value: 'sync',
-                child: Text("Forçar Sincronismo"),
-              ),
+              const PopupMenuItem(value: 'sync', child: Text("Forçar Sincronismo")),
               const PopupMenuItem(value: 'chat', child: Text("Suporte (Chat)")),
-              const PopupMenuDivider(), // Linha divisória para estética
+              const PopupMenuDivider(),
               const PopupMenuItem(
                 value: 'logout',
                 child: Text("Sair", style: TextStyle(color: Colors.redAccent)),
@@ -156,66 +155,102 @@ class _TodoListScreenState extends State<TodoListScreen> {
           ),
         ],
       ),
-      body: FutureBuilder<List<TaskModel>>(
-        future: _db.getTasksAtivas(), // Busca tarefas do SQLite
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(
-              child: Text(
-                "Nenhuma tarefa pendente.",
-                style: TextStyle(color: Colors.white54),
-              ),
-            );
-          }
-
-          final tasks = snapshot.data!;
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(20),
-            itemCount: tasks.length,
-            itemBuilder: (context, index) {
-              final item = tasks[index];
-
-              // Efeito de arrastar para o lado (iOS style)
-              return Dismissible(
-                key: Key(item.id),
-                direction: DismissDirection.endToStart,
-                background: Container(
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.only(right: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.redAccent,
-                    borderRadius: BorderRadius.circular(
-                      10,
-                    ), // Bordas leves para o swipe
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // SEÇÃO BEM-VINDO (USANDO O MODEL/DTO)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(25, 10, 25, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Seja bem-vindo,",
+                  style: TextStyle(color: Colors.white54, fontSize: 16),
+                ),
+                Text(
+                  widget.user.name, // Nome vindo da API/JWT
+                  style: const TextStyle(
+                    color: Colors.orange,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                   ),
-                  child: const Icon(Icons.delete_outline, color: Colors.white),
                 ),
-                onDismissed: (direction) async {
-                  // await _db.deleteTask(item.id);
-                  await _db.updateTaskStatus(item.id, 2);
-                },
-                child: TodoTile(
-                  label: item.tarefa,
-                  onCheck: () async {
-                    // Esta função só é chamada após o delay da animação no Widget
-                    await _db.updateTaskStatus(item.id, 1);
-                    if (mounted) setState(() {});
+              ],
+            ),
+          ),
+          
+          // O FutureBuilder precisa do Expanded para ocupar o resto da tela
+          Expanded(
+            child: FutureBuilder<List<TaskModel>>(
+              future: _db.getTasksAtivas(widget.user.userId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator(color: Colors.orange));
+                }
+
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      "Nenhuma tarefa pendente.",
+                      style: TextStyle(color: Colors.white54),
+                    ),
+                  );
+                }
+
+                final tasks = snapshot.data!;
+
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: tasks.length,
+                  itemBuilder: (context, index) {
+                    final item = tasks[index];
+
+                    return Dismissible(
+                      key: Key(item.id),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.delete_outline, color: Colors.white),
+                      ),
+                      onDismissed: (direction) async {
+                        final updateData = TaskUpdateDTO(
+                          id: item.id,
+                          status: 2,
+                          idUserLastUpdated: widget.user.userId,
+                        );
+
+                        await _db.updateTask(updateData);
+                      },
+                      child: TodoTile(
+                        label: item.tarefa,
+                        onCheck: () async {
+                          final updateData = TaskUpdateDTO(
+                            id: item.id,
+                            status: 1,
+                            idUserLastUpdated: widget.user.userId,
+                          );
+                          await _db.updateTask(updateData);
+                          if (mounted) setState(() {});
+                        },
+                      ),
+                    );
                   },
-                ),
-              );
-            },
-          );
-        },
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddTaskModal,
-        backgroundColor: const Color(0xFF1A4D6B),
-        child: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: Colors.orange,
+        child: const Icon(Icons.add, color: Colors.black),
       ),
     );
   }
