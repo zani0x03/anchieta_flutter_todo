@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:anchieta_flutter_todo/config/storage_config.dart';
 import 'package:flutter/material.dart';
 import 'todo_list_screen.dart';
 import '../widgets/custom_input.dart';
@@ -31,6 +34,9 @@ class _LoginScreenState extends State<LoginScreen> {
         _loginController.text, 
         _passwordController.text
       );
+
+      // await StorageConfig.storage.saveToken(authData.accessToken);
+      await StorageConfig.storage.saveToken(jsonEncode(authData));
       
       if (!mounted) return;
       Navigator.pop(context);

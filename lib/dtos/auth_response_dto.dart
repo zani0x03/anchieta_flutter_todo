@@ -17,20 +17,30 @@ class AuthResponseDto {
     required this.email,
   });
 
+  // Transforma o Objeto em Map (usado pelo jsonEncode)
+  Map<String, dynamic> toJson() {
+    return {
+      'access_token': accessToken,
+      'refresh_token': refreshToken,
+      'expires_in': expiresIn,
+      'userId': userId,
+      'name': name,
+      'email': email,
+    };
+  }
 
+  // Transforma o Map em Objeto (usado pelo jsonDecode + factory)
   factory AuthResponseDto.fromJson(Map<String, dynamic> json) {
     final String token = json['access_token'];
-    
-
     Map<String, dynamic> payload = JwtDecoder.decode(token);
 
     return AuthResponseDto(
       accessToken: token,
-      refreshToken: json['refresh_token'],
-      expiresIn: json['expires_in'],
-      userId: payload['sub'] ?? "",
-      name: payload['name'] ?? "Usuário",
-      email: payload['email'] ?? "",
+      refreshToken: json['refresh_token'] ?? "",
+      expiresIn: json['expires_in'] ?? 0,
+      userId: payload['sub'] ?? json['userId'] ?? "",
+      name: payload['name'] ?? json['name'] ?? "Usuário",
+      email: payload['email'] ?? json['email'] ?? "",
     );
   }
 }

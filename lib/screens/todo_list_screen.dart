@@ -1,3 +1,4 @@
+import 'package:anchieta_flutter_todo/config/storage_config.dart';
 import 'package:anchieta_flutter_todo/dtos/task_update_dto.dart';
 import 'package:anchieta_flutter_todo/dtos/auth_response_dto.dart';
 import 'package:anchieta_flutter_todo/screens/login_screen.dart';
@@ -33,7 +34,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
             child: const Text("Cancelar"),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async{
+              await StorageConfig.storage.deleteAuthData();
+              
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const LoginScreen()),

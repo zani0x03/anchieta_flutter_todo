@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:anchieta_flutter_todo/dtos/auth_response_dto.dart';
 import 'package:http/http.dart' as http;
-import 'package:jwt_decoder/jwt_decoder.dart';
 
 abstract class IAuthService {
   Future<AuthResponseDto> login(String username, String password);
